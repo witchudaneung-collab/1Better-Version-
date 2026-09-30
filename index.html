@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shanghai Cut</title>
+<style>
+:root{--bg:#f8f7f4;--card:#fff;--ink:#292727;--muted:#77706f;--rose:#d85c6a;--pink:#e9a6ad;--green:#7fa58a;--blue:#a9b9c8;--amber:#d5a85a;--line:#eee9e6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Thai",system-ui,-apple-system,sans-serif}
+.app{max-width:720px;margin:auto;padding:22px 18px 110px}.eyebrow{color:var(--muted);font-size:14px}.hero{display:flex;justify-content:space-between;gap:12px;align-items:end}.hero h1{margin:5px 0;font-size:32px}.pill{background:#fff1f2;color:var(--rose);padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px}
+.card{background:var(--card);border-radius:24px;padding:20px;margin:16px 0;box-shadow:0 8px 30px rgba(40,30,30,.06)}
+.navdate{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px}.navdate button,.btn{border:0;border-radius:14px;padding:12px;background:#f3efed;color:var(--ink);font-weight:700;cursor:pointer}.btn.primary{background:var(--rose);color:#fff}.center{text-align:center}
+.progress{height:9px;background:#eee;border-radius:999px;overflow:hidden}.bar{height:100%;width:0;background:var(--rose);transition:.25s}
+.task{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{width:20px;height:20px;accent-color:var(--rose);margin-top:3px}.task b{display:block}.small{font-size:13px;color:var(--muted);margin-top:4px}
+.sets{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.sets input,.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #e4ddda;border-radius:12px;background:white}.setbox{font-size:11px;color:var(--muted)}.info{border:0;background:none;color:var(--rose);padding:7px 0;cursor:pointer;font-weight:700}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#faf7f6;border-radius:18px;padding:13px;text-align:center}.stat strong{font-size:18px;display:block}.field{margin:12px 0}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:5}.bottom .inner{max-width:720px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}.tab{border:0;background:none;padding:13px 4px;color:var(--muted);cursor:pointer}.tab.active{color:var(--rose);font-weight:800}
+.page{display:none}.page.active{display:block}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:white;border:1px solid var(--line);border-radius:13px;min-height:64px;padding:7px;font-size:12px;cursor:pointer}.day.active{outline:2px solid var(--rose)}.day .icon{font-size:18px}.day.done{background:#f1f7f2}
+.modal{display:none;position:fixed;inset:0;background:rgba(30,25,25,.35);z-index:20;padding:20px;align-items:end;justify-content:center}.modal.show{display:flex}.sheet{background:white;max-width:650px;width:100%;max-height:80vh;overflow:auto;border-radius:28px 28px 16px 16px;padding:24px}.sheet h2{margin-top:0}.close{float:right;border:0;background:#f2eeee;border-radius:50%;width:34px;height:34px}
+.note{background:#f6f2f0;border-radius:16px;padding:13px;font-size:13px;color:#625b59}.success{color:var(--green);font-weight:800}
+@media(max-width:520px){.app{padding-left:14px;padding-right:14px}.hero h1{font-size:27px}.grid3{grid-template-columns:repeat(3,1fr)}.sets{grid-template-columns:1fr}.calendar{gap:3px}.day{min-height:58px;padding:5px}}
+</style></head>
+<body>
+<div class="app">
+<section id="today" class="page active">
+ <div class="hero"><div><div class="eyebrow">Shanghai Cut 🇨🇳 · 4 Nov–4 Dec 2026</div><h1 id="title"></h1><div id="dateText" class="eyebrow"></div></div><div class="pill" id="countdown"></div></div>
+ <div class="card">
+  <div class="navdate"><button onclick="moveDay(-1)">‹</button><div class="center"><b id="typeText"></b><div class="small" id="dayIndex"></div></div><button onclick="moveDay(1)">›</button></div>
+  <div style="margin:18px 0 8px" class="progress"><div id="workBar" class="bar"></div></div><div id="pct">0% complete</div>
+  <div id="tasks"></div>
+ </div>
+ <div class="card">
+  <h3>Daily Check-in</h3>
+  <div class="grid3"><div class="stat">⚖️<strong id="wShow">—</strong><span>kg</span></div><div class="stat">🥛<strong id="pShow">0</strong><span>/110 g</span></div><div class="stat">😴<strong id="sShow">—</strong><span>hours</span></div></div>
+  <div class="field"><label>น้ำหนักวันนี้ (kg)</label><input id="weight" type="number" step=".1"></div>
+  <div class="field"><label>โปรตีนวันนี้ (g)</label><input id="protein" type="number"></div>
+  <div class="field"><label>การนอน (ชั่วโมง)</label><input id="sleep" type="number" step=".1"></div>
+  <div class="field"><label>สภาพขา</label><select id="legs"><option>🟢 สดชื่น</option><option>🟡 ล้าเล็กน้อย</option><option>🟠 ปวดกล้ามเนื้อ</option><option>🔴 เจ็บ</option></select></div>
+  <div class="field"><label>หมายเหตุ</label><textarea id="notes" rows="2"></textarea></div>
+  <button class="btn primary" onclick="saveCheckin()">บันทึกวันนี้ ✓</button>
+ </div>
+</section>
+<section id="plan" class="page"><div class="hero"><div><div class="eyebrow">เลือกวันเพื่อเปิด Checklist</div><h1>📅 แผนทั้งหมด</h1></div></div><div class="card"><div class="calendar" id="calendar"></div></div></section>
+<section id="progressPage" class="page"><div class="hero"><div><div class="eyebrow">Your Progress ✨</div><h1>Journey to Shanghai</h1></div></div><div class="card"><div class="grid3"><div class="stat"><strong>75.0</strong>เริ่มต้น</div><div class="stat"><strong id="currentWeight">—</strong>ปัจจุบัน</div><div class="stat"><strong>70.0</strong>เป้าหมาย</div></div><h3 style="margin-top:24px">ความสม่ำเสมอ</h3><div class="progress"><div id="allBar" class="bar"></div></div><p id="allText"></p><div id="history"></div></div></section>
+<section id="library" class="page"><div class="hero"><div><div class="eyebrow">กดเพื่อดูวิธีทำ</div><h1>🏋🏻‍♀️ คลังท่า</h1></div></div><div class="card" id="libraryList"></div></section>
+</div>
+<nav class="bottom"><div class="inner"><button class="tab active" onclick="showPage('today',this)">🏠<br>วันนี้</button><button class="tab" onclick="showPage('plan',this)">📅<br>แผน</button><button class="tab" onclick="showPage('progressPage',this)">✨<br>Progress</button><button class="tab" onclick="showPage('library',this)">🏋🏻‍♀️<br>ท่า</button></div></nav>
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div>
+<script>
+const programs=[
+["2026-11-04","💪 Upper A",["Lat Pulldown|3×10–12","Chest Press|3×10–12","Seated Row|3×10–12","Shoulder Press|3×10","Biceps Curl|2×12","Triceps Pushdown|2×12"]],
+["2026-11-05","🚶 Light Cardio",["เดินลู่|30–35 นาที · เบา–ปานกลาง · ไม่ต้องชันมาก"]],
+["2026-11-06","☁️ Rest",["Full Rest|Recovery เป็นส่วนหนึ่งของโปรแกรม"]],
+["2026-11-07","🧘 Core + Mobility",["Dead Bug|3×10/ข้าง","Bird Dog|3×10/ข้าง","Plank|3×30 sec","Mobility / Stretching|15 นาที"]],
+["2026-11-08","🏃 Sunday Run",["Lumpini Park Easy Run|7 km · ไม่ไล่ pace","Evening Rest|พักช่วงเย็น"]],
+["2026-11-09","💪 Upper B",["Lat Pulldown|3×12","Seated Row|3×12","Chest Press|3×12","Lateral Raise|3×12","Biceps Curl|2×12","Triceps Pushdown|2×12"]],
+["2026-11-10","🍑 Lower Body",["Leg Press|3×10","Hip Thrust|3×10–12","Romanian Deadlift (RDL)|3×10","Leg Curl|3×12","Hip Abduction|2×15"]],
+["2026-11-11","🧘 Recovery",["เดินตามปกติ|ไม่ทำ Structured Cardio","Mobility|15–20 นาที"]],
+["2026-11-12","💪 Full Body · Upper Focus",["Lat Pulldown|3×10","Chest Press|3×10","Seated Row|3×10","Hip Thrust (Light)|2×12","Shoulder Press|2×10","Plank|3×30–45 sec"]],
+["2026-11-13","☁️ Rest",["Full Rest|พักเต็มที่"]],
+["2026-11-14","🧘 Core + Mobility",["Dead Bug|3×10/ข้าง","Bird Dog|3×10/ข้าง","Side Plank|2×20–30 sec/ข้าง","Mobility|15–20 นาที"]],
+["2026-11-15","🏃 Sunday Run",["Lumpini Park Easy Run|7 km","Evening Rest|พักช่วงเย็น"]],
+["2026-11-16","💪 Upper B",["Lat Pulldown|3×12","Seated Row|3×12","Chest Press|3×12","Lateral Raise|3×12","Biceps Curl|2×12","Triceps Pushdown|2×12"]],
+["2026-11-17","🍑 Lower Body",["Leg Press|3×10–12","Hip Thrust|3×10–12","Romanian Deadlift (RDL)|3×10","Leg Curl|3×12","Hip Abduction|3×15"]],
+["2026-11-18","🧘 Recovery",["Mobility|15–20 นาที","เดินตามกิจวัตร|ไม่ทำ Structured Cardio"]],
+["2026-11-19","💪 Full Body · Upper Focus",["Lat Pulldown|3×10","Chest Press|3×10","Seated Row|3×10","Hip Thrust (Light)|2×12","Shoulder Press|2×10","Plank|3×30–45 sec"]],
+["2026-11-20","☁️ Rest",["Full Rest|พักเต็มที่"]],
+["2026-11-21","🧘 Core + Mobility",["Dead Bug|3×10/ข้าง","Bird Dog|3×10/ข้าง","Side Plank|2×20–30 sec/ข้าง","Mobility|20–30 นาที"]],
+["2026-11-22","🏃 Sunday Run",["Lumpini Park Easy Run|7 km","Evening Rest|พักช่วงเย็น"]],
+["2026-11-23","💪 Upper B",["Lat Pulldown|3×12","Seated Row|3×12","Chest Press|3×12","Lateral Raise|3×12","Biceps Curl|2×12","Triceps Pushdown|2×12","Core|เลือก Dead Bug หรือ Plank"]],
+["2026-11-24","🍑 Lower Body",["Leg Press|3×10–12","Hip Thrust|3×10–12","Romanian Deadlift (RDL)|3×10","Leg Curl|3×12","Hip Abduction|3×15"]],
+["2026-11-25","🧘 Recovery",["เดินตามปกติ|ไม่วิ่ง/ไม่เดินชัน","Mobility|15–20 นาที"]],
+["2026-11-26","💪 Full Body · Upper Focus",["Lat Pulldown|3×10","Chest Press|3×10","Seated Row|3×10","Hip Thrust (Light)|2×12","Shoulder Press|2×10","Core|2–3 sets"]],
+["2026-11-27","☁️ Rest",["Full Rest|พักเต็มที่"]],
+["2026-11-28","🧘 Core + Mobility",["Dead Bug|3×10/ข้าง","Bird Dog|3×10/ข้าง","Side Plank|2×20–30 sec/ข้าง","Mobility|เบา ๆ เก็บขาไว้วันอาทิตย์"]],
+["2026-11-29","🏃 Sunday Run",["Lumpini Park Easy Run|7 km","Evening Rest|พักช่วงเย็น"]],
+["2026-11-30","💪 Upper Body",["Lat Pulldown|3×10–12","Seated Row|3×10–12","Chest Press|3×10–12","Shoulder Press|3×10","Biceps Curl|2×12","Triceps Pushdown|2×12"]],
+["2026-12-01","🍑 Light Lower Body",["Leg Press|2×10","Hip Thrust|2×10","Leg Curl|2×12","Hip Abduction|2×12"]],
+["2026-12-02","🧘 Recovery",["Mobility|เบา ๆ","เดินตามปกติ|ไม่ทำ Hard Cardio"]],
+["2026-12-03","💪 Light Upper Body",["Lat Pulldown|2×10","Seated Row|2×10","Chest Press|2×10","Shoulder Press|2×10"]],
+["2026-12-04","☁️ Rest",["Full Rest|เตรียมเดินทางและนอนให้พอ"]]
+];
+const info={
+"Lat Pulldown":["หลัง + ปีก","ดึงบาร์ลงบริเวณอกส่วนบน คิดว่าใช้ “ข้อศอกดึงลง”","ไม่ดึงบาร์หลังคอ และไม่โยกตัวแรง"],
+"Chest Press":["อก + หลังแขน","หลังแนบเบาะ ดันด้ามไปด้านหน้า แล้วกลับอย่างควบคุม","ไม่ยกไหล่และไม่ล็อกข้อศอก"],
+"Seated Row":["หลัง","นั่งหลังตรง ดึงเข้าหาลำตัวและบีบสะบักเล็กน้อย","ไม่โยกตัวไปหน้า–หลัง"],
+"Shoulder Press":["หัวไหล่ + หลังแขน","ดันน้ำหนักจากระดับไหล่ขึ้นเหนือศีรษะ","ไม่แอ่นหลังมากและไม่ล็อกข้อศอก"],
+"Biceps Curl":["หน้าแขน","เก็บข้อศอกใกล้ลำตัว งอแขนขึ้นและลดช้า ๆ","ไม่เหวี่ยงตัวช่วย"],
+"Triceps Pushdown":["หลังแขน","เก็บข้อศอกข้างลำตัวแล้วกดเคเบิลลง","ไม่ใช้ลำตัวกดช่วย"],
+"Lateral Raise":["หัวไหล่ด้านข้าง","ยกแขนออกด้านข้างประมาณระดับหัวไหล่","ใช้น้ำหนักไม่หนักมากและไม่เหวี่ยง"],
+"Leg Press":["ต้นขาด้านหน้า + ก้น","หลังและสะโพกแนบเบาะ วางเท้ากว้างประมาณหัวไหล่ ดันออกและลดกลับช้า ๆ","ไม่ล็อกเข่า เข่าไปทิศเดียวกับปลายเท้า"],
+"Hip Thrust":["ก้น","หลังส่วนบนพิงม้านั่ง ดันสะโพกขึ้น บีบก้นด้านบนแล้วลดช้า ๆ","ไม่แอ่นหลังเพื่อดันให้สูง"],
+"Romanian Deadlift (RDL)":["ก้น + หลังต้นขา","งอเข่าเล็กน้อย ดันก้นไปด้านหลัง ดัมเบลชิดขา หลังเป็นกลาง แล้วดันสะโพกกลับ","จำง่าย: ดันก้นไปด้านหลัง ไม่ใช่ก้มตัวลง หากรู้สึกหลังล่างมากให้เช็กฟอร์ม"],
+"Leg Curl":["หลังต้นขา","งอเข่าต้านน้ำหนักแล้วปล่อยกลับอย่างควบคุม","ไม่เหวี่ยงน้ำหนัก"],
+"Hip Abduction":["ก้นด้านข้าง + สะโพก","กางเข่าออกแล้วค่อย ๆ กลับ","ไม่กระแทกน้ำหนัก"],
+"Plank":["Core","ข้อศอกใต้ไหล่ เกร็งท้องและก้น รักษาลำตัวตรง","ไม่ปล่อยเอวตก"],
+"Dead Bug":["Core","นอนหงาย เหยียดแขนและขาฝั่งตรงข้ามช้า ๆ","หลังล่างไม่ควรแอ่นจากพื้น"],
+"Bird Dog":["Core + Stability","ตั้งท่าคลาน เหยียดแขนและขาฝั่งตรงข้าม","รักษาสะโพกให้นิ่ง"],
+"Side Plank":["Core ด้านข้าง","ข้อศอกใต้ไหล่ ยกสะโพกให้ลำตัวเป็นแนวตรง","ถ้ายากสามารถงอเข่าช่วยพยุง"]
+};
+let idx=0;
+const now=new Date(), start=new Date("2026-11-04T00:00:00"), end=new Date("2026-12-04T23:59:59");
+if(now>=start&&now<=end){let key=now.toISOString().slice(0,10);let f=programs.findIndex(x=>x[0]===key);if(f>=0)idx=f}
+function key(){return programs[idx][0]} function data(){return JSON.parse(localStorage.getItem("sc_"+key())||"{}")} function put(d){localStorage.setItem("sc_"+key(),JSON.stringify(d))}
+function render(){
+ let p=programs[idx],d=data(),dt=new Date(p[0]+"T12:00:00");
+ title.textContent=p[1]; dateText.textContent=dt.toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});typeText.textContent=p[1];dayIndex.textContent=`Day ${idx+1} of ${programs.length}`;
+ let trip=new Date("2026-12-05T00:00:00");countdown.textContent=Math.max(0,Math.ceil((trip-dt)/86400000))+" DAYS TO SHANGHAI";
+ tasks.innerHTML=p[2].map((x,i)=>{let [n,desc]=x.split("|"),checked=(d.tasks||[]).includes(i),strength=/×/.test(desc),base=n.replace(" (Light)","");
+ return `<div class="task"><input type="checkbox" ${checked?"checked":""} onchange="toggleTask(${i},this.checked)"><div><b>${n} — ${desc}</b>${info[base]?`<button class="info" onclick='showInfo(${JSON.stringify(base)})'>ⓘ ดูวิธีทำ</button>`:""}${strength?`<div class="sets">${[1,2,3].map(s=>`<div class="setbox">SET ${s}<input placeholder="kg / reps" value="${((d.sets||{})[i]||{})[s]||""}" onchange="saveSet(${i},${s},this.value)"></div>`).join("")}</div>`:""}</div></div>`}).join("");
+ let done=(d.tasks||[]).length,total=p[2].length,pct=Math.round(done/total*100);workBar.style.width=pct+"%";document.getElementById("pct").textContent=pct+"% complete";
+ weight.value=d.weight||"";protein.value=d.protein||"";sleep.value=d.sleep||"";legs.value=d.legs||"🟢 สดชื่น";notes.value=d.notes||"";wShow.textContent=d.weight||"—";pShow.textContent=d.protein||0;sShow.textContent=d.sleep||"—";renderCalendar();renderProgress()
+}
+function toggleTask(i,v){let d=data(),a=new Set(d.tasks||[]);v?a.add(i):a.delete(i);d.tasks=[...a];put(d);render()}
+function saveSet(i,s,v){let d=data();d.sets=d.sets||{};d.sets[i]=d.sets[i]||{};d.sets[i][s]=v;put(d)}
+function saveCheckin(){let d=data();Object.assign(d,{weight:weight.value,protein:protein.value,sleep:sleep.value,legs:legs.value,notes:notes.value});put(d);render();alert("บันทึกแล้ว ✓")}
+function moveDay(n){idx=Math.max(0,Math.min(programs.length-1,idx+n));render()}
+function showPage(id,b){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="progressPage")renderProgress()}
+function renderCalendar(){calendar.innerHTML=programs.map((p,i)=>{let d=JSON.parse(localStorage.getItem("sc_"+p[0])||"{}"),done=(d.tasks||[]).length===p[2].length;return `<div class="day ${i===idx?"active":""} ${done?"done":""}" onclick="idx=${i};render();showPage('today',document.querySelector('.tab'))"><div>${new Date(p[0]+"T12:00").getDate()}</div><div class="icon">${p[1].split(" ")[0]}</div>${done?"✓":""}</div>`}).join("")}
+function renderProgress(){let completed=0,lastW=null,rows=[];programs.forEach(p=>{let d=JSON.parse(localStorage.getItem("sc_"+p[0])||"{}");if((d.tasks||[]).length===p[2].length)completed++;if(d.weight){lastW=d.weight;rows.push(`<div class="task"><div>✓</div><div><b>${new Date(p[0]+"T12:00").toLocaleDateString("th-TH",{day:"numeric",month:"short"})}</b><div class="small">${d.weight} kg · Protein ${d.protein||0} g</div></div></div>`)}});let pc=Math.round(completed/programs.length*100);allBar.style.width=pc+"%";allText.textContent=`${completed} / ${programs.length} วัน · ${pc}%`;currentWeight.textContent=lastW||"—";history.innerHTML=rows.slice(-7).reverse().join("")}
+function showInfo(n){let x=info[n];modalBody.innerHTML=`<div class="eyebrow">วิธีทำ</div><h2>${n}</h2><p><b>กล้ามเนื้อ:</b> ${x[0]}</p><div class="note"><b>วิธีทำ</b><br>${x[1]}</div><p><b>⚠️ ข้อควรระวัง</b><br>${x[2]}</p><div class="note">เลือกน้ำหนักที่จบเซ็ตแล้วยังทำต่อได้อีกประมาณ 2–3 ครั้ง เน้นฟอร์มก่อนน้ำหนัก และไม่ต้องเล่นจนหมดแรง</div>`;modal.classList.add("show")}
+function closeModal(){modal.classList.remove("show")}
+libraryList.innerHTML=Object.keys(info).map(n=>`<div class="task" onclick='showInfo(${JSON.stringify(n)})'><div>ⓘ</div><div><b>${n}</b><div class="small">${info[n][0]}</div></div></div>`).join("");
+render();
+</script></body></html>
